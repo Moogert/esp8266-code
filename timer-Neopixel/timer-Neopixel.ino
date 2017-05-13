@@ -1,7 +1,7 @@
 //
 // ESP8266 Timer Example
 // SwitchDoc Labs  October 2015
-// A copy is available at: 
+// A copy is available at:
 // http://www.switchdoc.com/2015/10/iot-esp8266-timer-tutorial-arduino-ide/
 
 
@@ -16,7 +16,16 @@ bool tickOccured;
 // start of timerCallback
 void timerCallback(void *pArg) {
 
-  tickOccured = true;
+  // add LED stuff
+  // tickOccured = true;
+  val = (exp(sin(x * PI)) - 0.36787944) * 108.0; // this ranges 0 - 255
+  for (i = 0; i < strip.numPixels(); i++) {
+    strip.setPixelColor(i, strip.Color(0, 0, val));
+  }
+  strip.show();
+  x += 
+}
+
 
 } // End of timerCallback
 
@@ -56,7 +65,7 @@ void user_init(void) {
 
   */
 
-  os_timer_arm(&myTimer, 1000, true);
+  os_timer_arm(&myTimer, 1000, true); // timer runs every second
 } // End of user_init
 
 
@@ -90,6 +99,9 @@ void loop() {
 
   yield();  // or delay(0);
 
-
-
 }
+
+
+
+
+
