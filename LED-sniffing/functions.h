@@ -1,15 +1,5 @@
 // This-->tab == "functions.h"
-#include <Adafruit_NeoPixel.h>
-#include <math.h>
-// OK need to define variables here too 
-#define PIN 14
-uint16_t mod2 = 0;
-uint16_t mod1 = 0;
-uint16_t i = 0;
-float val = 0; 
 
-
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(12, PIN, NEO_GRB + NEO_KHZ800);
 // Expose Espressif SDK functionality
 extern "C" {
 #include "user_interface.h"
@@ -21,7 +11,7 @@ extern "C" {
 
 #include <ESP8266WiFi.h>
 #include "./structures.h"
-uint32_t purple = strip.Color(4, 0, 8);
+
 #define MAX_APS_TRACKED 100
 #define MAX_CLIENTS_TRACKED 200
 
@@ -33,7 +23,7 @@ int clients_known_count = 0;                              // Number of known CLI
 
 
 
-int register_beacon(beaconinfo beacon) // we register a new beacom
+int register_beacon(beaconinfo beacon)
 {
   int known = 0;   // Clear known flag
   for (int u = 0; u < aps_known_count; u++)
@@ -57,36 +47,25 @@ int register_beacon(beaconinfo beacon) // we register a new beacom
   return known;
 }
 
-
-// we register a new client - we want to invoke the LED
-// procedure if it's a client of interest to us
 int register_client(clientinfo ci)
 {
   int known = 0;   // Clear known flag
-  for (int u = 0; u < clients_known_count; u++) // if we've seen this before...
+  for (int u = 0; u < clients_known_count; u++)
   {
-    // compare
-    if (! memcmp(clients_known[u].station, ci.station, ETH_MAC_LEN)) { // if known
+    if (! memcmp(clients_known[u].station, ci.station, ETH_MAC_LEN)) {
       known = 1;
-      break; // break
+      break;
     }
   }
-  if (! known) // if not...
+  if (! known)
   {
     memcpy(&clients_known[clients_known_count], &ci, sizeof(ci));
-    
-    /*
-    // need to compare to a known list of interesting MACs
-    // lfind(ci.bssid, knownMacs, sizeof(knownMacs), sizeof(ci));
-    
-    */
-    
     clients_known_count++;
 
     if ((unsigned int) clients_known_count >=
-        sizeof (clients_known) / sizeof (clients_known[0]) ) { // if we have too many...
+        sizeof (clients_known) / sizeof (clients_known[0]) ) {
       Serial.printf("exceeded max clients_known\n");
-      clients_known_count = 0; // ...we go back to the beginning.
+      clients_known_count = 0;
     }
   }
   return known;
@@ -103,29 +82,6 @@ void print_beacon(beaconinfo beacon)
     Serial.printf("   %4d\r\n", beacon.rssi);
   }
 }
-
-// This is a function that will light up the neopixels when we find a MAC we want
-
-
-/*
-void lightShow() {
-  uint32_t c = strip.Color(4, 0, 8);
-  uint32_t off = strip.Color(0, 0, 0); // how to turn everything off
-  for (uint16_t i = 0; i < strip.numPixels(); i++) {
-    mod1 = (i + 2) % 12;
-    mod2 = (i + 3) % 12;
-    strip.setPixelColor(i, c);
-    strip.setPixelColor(mod1, c);
-    strip.setPixelColor(mod2, c);
-    strip.show();
-    delay(wait);
-    strip.setPixelColor(i, off);
-    strip.setPixelColor(mod1, off);
-    strip.setPixelColor(mod2, off);
-
-  }
-}
-*/
 
 void print_client(clientinfo ci)
 {

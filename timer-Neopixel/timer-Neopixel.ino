@@ -1,8 +1,17 @@
-//
+// ripped off by Jeffrey Wubbenhorst 
 // ESP8266 Timer Example
 // SwitchDoc Labs  October 2015
-// A copy is available at:
+// derived from:
 // http://www.switchdoc.com/2015/10/iot-esp8266-timer-tutorial-arduino-ide/
+
+#include <stdio.h>
+#include <math.h>
+#include <Adafruit_NeoPixel.h>
+#define PIN 14
+#define PI 3.14159265
+uint16_t i = 0;
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(12, PIN, NEO_GRB + NEO_KHZ800);
+double x = 0;
 
 
 extern "C" {
@@ -18,14 +27,12 @@ void timerCallback(void *pArg) {
 
   // add LED stuff
   // tickOccured = true;
-  val = (exp(sin(x * PI)) - 0.36787944) * 108.0; // this ranges 0 - 255
+float val = (exp(sin(x * PI)) - 0.36787944) * 108.0;
   for (i = 0; i < strip.numPixels(); i++) {
     strip.setPixelColor(i, strip.Color(0, 0, val));
   }
   strip.show();
-  x += 
-}
-
+  x = x + 0.05; 
 
 } // End of timerCallback
 
@@ -65,13 +72,15 @@ void user_init(void) {
 
   */
 
-  os_timer_arm(&myTimer, 1000, true); // timer runs every second
+  os_timer_arm(&myTimer, 50, true); // timer runs every 50ms 
 } // End of user_init
 
 
 void setup() {
 
-
+// get neopixels going 
+strip.begin();
+  strip.show(); // Initialize all pixels to 'off'
   Serial.begin(115200);
   Serial.println();
   Serial.println();
@@ -88,14 +97,6 @@ void setup() {
 }
 
 void loop() {
-
-  if (tickOccured == true)
-  {
-
-    Serial.println("Tick Occurred");
-    tickOccured = false;
-
-  }
 
   yield();  // or delay(0);
 

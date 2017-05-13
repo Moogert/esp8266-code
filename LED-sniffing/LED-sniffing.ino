@@ -1,16 +1,61 @@
 // by Ray Burnette 20161013 compiled on Linux 16.3 using Arduino 1.6.12
-// modified by Jeffrey Wubbenhorst
+// ripped off by Jeffrey Wubbenhorst
+// ESP8266 Timer Example
+// SwitchDoc Labs  October 2015
+// derived from:
+// http://www.switchdoc.com/2015/10/iot-esp8266-timer-tutorial-arduino-ide/
 
+#include <stdio.h>
+#include <math.h>
 #include <Adafruit_NeoPixel.h>
+#define PIN 14
+#define PI 3.14159265
+uint16_t i = 0;
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(12, PIN, NEO_GRB + NEO_KHZ800);
+double x = 0;
+
 #include <ESP8266WiFi.h>
 #include "./functions.h"
+
 #define disable 0
 #define enable  1
-#define PIN 14
 // uint8_t channel = 1;
 unsigned int channel = 1;
 
+
+extern "C" {
+#include "user_interface.h"
+}
+
+os_timer_t myTimer;
+
+bool tickOccured;
+
+// start of timerCallback
+void timerCallback(void *pArg) {
+
+  // add LED stuff
+  // tickOccured = true;
+  float val = (exp(sin(x / 2 * PI)) - 0.36787944) * 108.0;
+  for (i = 0; i < strip.numPixels(); i++) {
+    strip.setPixelColor(i, strip.Color(0, 0, val));
+  }
+  strip.show();
+  x = x + 0.05; // runs through a cycle every 2 seconds 
+
+} // End of timerCallback
+
+void user_init(void) {
+  os_timer_setfn(&myTimer, timerCallback, NULL);
+  os_timer_arm(&myTimer, 50, true); // timer runs every 50ms
+} // End of user_init
+
+
+
 void setup() {
+  // get neopixels going
+  strip.begin();
+  strip.show(); // Initialize all pixels to 'off'
   Serial.begin(57600);
   Serial.printf("\n\nSDK version:%s\n\r", system_get_sdk_version());
   Serial.println(F("ESP8266 mini-sniff by Ray Burnette http://www.hackster.io/rayburne/projects"));
@@ -21,20 +66,10 @@ void setup() {
   wifi_promiscuous_enable(disable);
   wifi_set_promiscuous_rx_cb(promisc_cb);   // Set up promiscuous callback
   wifi_promiscuous_enable(enable);
-  strip.begin(); // NEOPIXELS
-  strip.show(); // Initialize all pixels to 'off'
+   user_init();
 }
 
 void loop() {
-  
-  /*
-  val = (exp(sin(millis() / 2000.0 * PI)) - 0.36787944) * 108.0;
-  for (i = 0; i < strip.numPixels(); i++) {
-    strip.setPixelColor(i, strip.Color(0, 0, val));
-  }
-  strip.show();
-  */
-  
   channel = 1;
   wifi_set_channel(channel);
   while (true) {
@@ -54,6 +89,5 @@ void loop() {
       Serial.println("\n-------------------------------------------------------------------------------------\n");
     }
   }
-  strip.show();
 }
 
